@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kavishe App Store — Admin</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: { bg:'#0b0f0d', panel:'#121815', panel2:'#171f1b', line:'#233029', emerald:'#1fae66', emeraldDeep:'#0f7a48', gold:'#d4a13d' },
+        fontFamily: { display:['"Poppins"','sans-serif'], body:['"Inter"','sans-serif'] }
+      }
+    }
+  }
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  body { background: radial-gradient(circle at 20% -10%, #1f1706 0%, #0b0f0d 45%) fixed; }
+  ::-webkit-scrollbar { height: 6px; width: 6px; }
+  ::-webkit-scrollbar-thumb { background: #233029; border-radius: 10px; }
+  .modal-backdrop { backdrop-filter: blur(6px); }
+  .fade-in { animation: fadeIn .25s ease; }
+  @keyframes fadeIn { from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+</style>
+</head>
+<body class="bg-bg text-gray-100 font-body min-h-screen">
+
+<!-- ADMIN LOGIN SCREEN -->
+<div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
+  <div class="fade-in w-full max-w-sm bg-panel border border-line rounded-2xl p-6">
+    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-gold to-yellow-600 flex items-center justify-center mb-4">
+      <i class="fa-solid fa-user-shield text-bg"></i>
+    </div>
+    <h1 class="font-display font-bold text-xl mb-1">Kavishe App Store</h1>
+    <p class="text-xs text-gray-500 mb-5">Admin Panel — ingia kusimamia store.</p>
+    <div id="loginError" class="hidden text-xs bg-red-500/10 text-red-400 border border-red-500/30 rounded-lg px-3 py-2 mb-3"></div>
+    <div class="space-y-3">
+      <input id="adminEmail" type="email" placeholder="Barua pepe ya admin" class="w-full bg-panel2 border border-line rounded-lg px-3 py-2.5 text-sm outline-none focus:border-gold">
+      <input id="adminPass" type="password" placeholder="Password" class="w-full bg-panel2 border border-line rounded-lg px-3 py-2.5 text-sm outline-none focus:border-gold">
+      <button onclick="submitAdminLogin()" class="w-full bg-gradient-to-r from-gold to-yellow-600 text-bg font-semibold py-2.5 rounded-lg text-sm hover:opacity-90 transition">Ingia</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN DASHBOARD -->
+<div id="dashboard" class="hidden">
+  <header class="sticky top-0 z-30 bg-bg/90 backdrop-blur border-b border-line">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-gold to-yellow-600 flex items-center justify-center">
+          <i class="fa-solid fa-user-shield text-bg text-sm"></i>
+        </div>
+        <div>
+          <h1 class="font-display font-bold text-base leading-none">Admin Panel</h1>
+          <p class="text-[10px] text-gray-500 -mt-0.5">Kavishe App Store</p>
+        </div>
+      </div>
+      <button onclick="logout()" class="text-xs text-gray-400 hover:text-red-400"><i class="fa-solid fa-right-from-bracket mr-1"></i>Toka</button>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-4 py-6">
+    <div class="flex gap-2 mb-6 border-b border-line">
+      <button onclick="switchTab('add')" class="admin-tab px-4 py-2 text-sm border-b-2 border-emerald text-emerald" data-tab="add">Ongeza App</button>
+      <button onclick="switchTab('manage')" class="admin-tab px-4 py-2 text-sm border-b-2 border-transparent text-gray-400" data-tab="manage">Simamia Apps</button>
+      <button onclick="switchTab('categories')" class="admin-tab px-4 py-2 text-sm border-b-2 border-transparent text-gray-400" data-tab="categories">Categories</button>
+      <button onclick="switchTab('users')" class="admin-tab px-4 py-2 text-sm border-b-2 border-transparent text-gray-400" data-tab="users">Users</button>
+      <button onclick="switchTab('ads')" class="admin-tab px-4 py-2 text-sm border-b-2 border-transparent text-gray-400" data-tab="ads">Matangazo</button>
+    </div>
+
+    <!-- Add App -->
+    <div id="tabAdd" class="tab-content space-y-3 max-w-lg">
+      <div id="formError" class="hidden text-xs bg-red-500/10 text-red-400 border border-red-500/30 rounded-lg px-3 py-2"></div>
+      <div id="formSuccess" class="hidden text-xs bg-emerald/10 text-emerald border border-emerald/30 rounded-lg px-3 py-2"></div>
+      <input id="fName" placeholder="Jina la App" class="w-full bg-panel2 border border-line rounded-lg px-3 py-2.5 text-sm outline-none focus:border-emerald">
+      <select id="fCategory" class="w-full bg-panel2 border border-line rounded-lg px-3 py-2.5 text-sm outline-none focus:border-emerald"></select>
+      <div>
+        <label class="text-[11px] text-gray-500 mb-1 block">Picha ya App (chagua kutoka simu)</label>
+        <input id="fIconFile" type="file" accept="image/*" class="w-full bg-panel2 border border-line rounded-lg px-3 py-2.5 text-sm outline-none focus:border-emerald">
+      </div>
+      <textarea id="fDesc" placeholder="Maelezo mafupi ya app" rows="3" class="w-full bg-panel2 border border-line rounded-lg px-3 py-2.5 text-sm outline-none focus:border-emerald"></textarea>
+      <input id="fLink" placeholder="Google Drive Link ya APK" class="w-full bg-panel2 border border-line rounded-lg px-3 py-2.5 text-sm outline-none focus:border-emerald">
+      <label class="flex items-center gap-2 text-xs text-gray-400">
+        <input id="fLocked" type="checkbox" onchange="document.getElementById('fLockMsgWrap').classList.toggle('hidden', !this.checked)"> Funga App hii (Locked)
+      </label>
+      <div id="fLockMsgWrap" class="hidden">
+        <textarea id="fLockMsg" placeholder="Ujumbe utakaoonekana kwa mtumiaji (mfano: Lipa kwanza ili kupakua app hii)" rows="2" class="w-full bg-panel2 border border-line rounded-lg px-3 py-2.5 text-sm outline-none focus:border-gold"></textarea>
+      </div>
+      <button onclick="addApp()" id="fSubmitBtn" class="w-full bg-gradient-to-r from-emerald to-emeraldDeep text-bg font-semibold py-2.5 rounded-lg text-sm hover:opacity-90 transition">
+        <i class="fa-solid fa-plus mr-1"></i> Ongeza App
+      </button>
+    </div>
+
+    <!-- Manage -->
+    <div id="tabManage" class="tab-content hidden space-y-2"></div>
+
+    <!-- Categories -->
+    <div id="tabCategories" class="tab-content hidden">
+      <div class="max-w-lg space-y-3 mb-8">
+        <input id="catLabel" placeholder="Jina la Category (mfano: Michezo)" class="w-full bg-panel2 border border-line rounded-lg px-3 py-2.5 text-sm outline-none focus:border-emerald">
+        <input id="catIcon" placeholder="Icon class ya Font Awesome (hiari, mfano: fa-gamepad)" class="w-full bg-panel2 border border-line rounded-lg px-3 py-2.5 text-sm outline-none focus:border-emerald">
+        <button onclick="addCategory()" class="w-full bg-gradient-to-r from-emerald to-emeraldDeep text-bg font-semibold py-2.5 rounded-lg text-sm hover:opacity-90 transition">
+          <i class="fa-solid fa-plus mr-1"></i> Ongeza Category
+        </button>
+      </div>
+      <h3 class="text-sm font-semibold text-gray-400 mb-3">Categories Zilizopo</h3>
+      <div id="categoriesList" class="space-y-2"></div>
+    </div>
+
+    <!-- Users -->
+    <div id="tabUsers" class="tab-content hidden space-y-2"></div>
+
+    <!-- Matangazo (Announcements) -->
+    <div id="tabAds" class="tab-content hidden">
+      <div class="max-w-lg space-y-3 mb-8">
+        <div id="adFormError" class="hidden text-xs bg-red-500/10 text-red-400 border border-red-500/30 rounded-lg px-3 py-2"></div>
+        <div id="adFormSuccess" class="hidden text-xs bg-emerald/10 text-emerald border border-emerald/30 rounded-lg px-3 py-2"></div>
+
+        <select id="adType" onchange="updateAdFormFields()" class="w-full bg-panel2 border border-line rounded-lg px-3 py-2.5 text-sm outline-none focus:border-emerald">
+          <option value="text">Tangazo la Maandishi (linalotembea)</option>
+          <option value="image">Tangazo la Picha (Coming Soon)</option>
+          <option value="video">Tangazo la Video</option>
+        </select>
+
+        <div id="adFieldText">
+          <textarea id="adText" placeholder="Andika ujumbe wa tangazo (mfano: App mpya ya Kavishe Chuo cha Biblia inakuja hivi karibuni!)" rows="2" class="w-full bg-panel2 border border-line rounded-lg px-3 py-2.5 text-sm outline-none focus:border-emerald"></textarea>
+        </div>
+
+        <div id="adFieldImage" class="hidden space-y-3">
+          <input id="adImgTitle" placeholder="Jina la App inayokuja" class="w-full bg-panel2 border border-line rounded-lg px-3 py-2.5 text-sm outline-none focus:border-emerald">
+          <div>
+            <label class="text-[11px] text-gray-500 mb-1 block">Picha (chagua kutoka simu)</label>
+            <input id="adImgFile" type="file" accept="image/*" class="w-full bg-panel2 border border-line rounded-lg px-3 py-2.5 text-sm outline-none focus:border-emerald">
+          </div>
+          <textarea id="adImgCaption" placeholder="Maelezo mafupi (hiari)" rows="2" class="w-full bg-panel2 border border-line rounded-lg px-3 py-2.5 text-sm outline-none focus:border-emerald"></textarea>
+          <input id="adImgLink" placeholder="Link (hiari) - itafunguka mtu akibofya picha" class="w-full bg-panel2 border border-line rounded-lg px-3 py-2.5 text-sm outline-none focus:border-emerald">
+        </div>
+
+        <div id="adFieldVideo" class="hidden space-y-3">
+          <input id="adVidTitle" placeholder="Jina la Tangazo" class="w-full bg-panel2 border border-line rounded-lg px-3 py-2.5 text-sm outline-none focus:border-emerald">
+          <div>
+            <label class="text-[11px] text-gray-500 mb-1 block">Pakia Video kutoka simu (au acha wazi ukitumia link chini)</label>
+            <input id="adVidFile" type="file" accept="video/*" class="w-full bg-panel2 border border-line rounded-lg px-3 py-2.5 text-sm outline-none focus:border-emerald">
+          </div>
+          <input id="adVidUrl" placeholder="Au Video URL (YouTube au link ya moja kwa moja)" class="w-full bg-panel2 border border-line rounded-lg px-3 py-2.5 text-sm outline-none focus:border-emerald">
+          <input id="adVidLink" placeholder="Link ya ziada (hiari)" class="w-full bg-panel2 border border-line rounded-lg px-3 py-2.5 text-sm outline-none focus:border-emerald">
+        </div>
+
+        <button onclick="addAnnouncement()" id="adSubmitBtn" class="w-full bg-gradient-to-r from-emerald to-emeraldDeep text-bg font-semibold py-2.5 rounded-lg text-sm hover:opacity-90 transition">
+          <i class="fa-solid fa-bullhorn mr-1"></i> Chapisha Tangazo
+        </button>
+      </div>
+
+      <h3 class="text-sm font-semibold text-gray-400 mb-3">Matangazo Yaliyopo</h3>
+      <div id="adsList" class="space-y-2"></div>
+    </div>
+  </main>
+</div>
+
+<!-- EDIT MODAL -->
+<div id="editModal" class="hidden fixed inset-0 z-[60] modal-backdrop bg-black/60 flex items-end sm:items-center justify-center p-0 sm:p-4">
+  <div class="fade-in bg-panel border border-line w-full sm:max-w-lg sm:rounded-2xl rounded-t-2xl p-6 relative">
+    <button onclick="closeModal('editModal')" class="absolute top-4 right-4 text-gray-500 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+    <h2 class="font-display font-bold text-lg mb-4">Hariri App</h2>
+    <input type="hidden" id="eId">
+    <div class="space-y-3">
+      <input id="eName" placeholder="Jina la App" class="w-full bg-panel2 border border-line rounded-lg px-3 py-2.5 text-sm outline-none focus:border-emerald">
+      <select id="eCategory" class="w-full bg-panel2 border border-line rounded-lg px-3 py-2.5 text-sm outline-none focus:border-emerald"></select>
+      <div>
+        <label class="text-[11px] text-gray-500 mb-1 block">Badilisha picha ya App (hiari - chagua kutoka simu)</label>
+        <input id="eIconFile" type="file" accept="image/*" class="w-full bg-panel2 border border-line rounded-lg px-3 py-2.5 text-sm outline-none focus:border-emerald">
+      </div>
+      <textarea id="eDesc" rows="3" class="w-full bg-panel2 border border-line rounded-lg px-3 py-2.5 text-sm outline-none focus:border-emerald"></textarea>
+      <input id="eLink" placeholder="Google Drive Link" class="w-full bg-panel2 border border-line rounded-lg px-3 py-2.5 text-sm outline-none focus:border-emerald">
+      <label class="flex items-center gap-2 text-xs text-gray-400">
+        <input id="eLocked" type="checkbox" onchange="document.getElementById('eLockMsgWrap').classList.toggle('hidden', !this.checked)"> Funga App hii (Locked)
+      </label>
+      <div id="eLockMsgWrap" class="hidden">
+        <textarea id="eLockMsg" placeholder="Ujumbe utakaoonekana kwa mtumiaji" rows="2" class="w-full bg-panel2 border border-line rounded-lg px-3 py-2.5 text-sm outline-none focus:border-gold"></textarea>
+      </div>
+      <button onclick="saveEditApp()" id="eSubmitBtn" class="w-full bg-gradient-to-r from-emerald to-emeraldDeep text-bg font-semibold py-2.5 rounded-lg text-sm">Hifadhi Mabadiliko</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="hidden fixed bottom-5 left-1/2 -translate-x-1/2 bg-panel2 border border-line text-sm px-4 py-2.5 rounded-full shadow-xl z-[70]"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+<script>
+// ---------- FIREBASE ----------
+const firebaseConfig = {
+  apiKey: "AIzaSyAemCJ9p0IRAQovVT6YJTye7I98L1q_oAY",
+  authDomain: "kavishe-app-store.firebaseapp.com",
+  databaseURL: "https://kavishe-app-store-default-rtdb.firebaseio.com",
+  projectId: "kavishe-app-store",
+  storageBucket: "kavishe-app-store.firebasestorage.app",
+  messagingSenderId: "273060621835",
+  appId: "1:273060621835:web:6c7444917f0df8de46210e"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+const storage = firebase.storage();
+
+// ---------- CATEGORIES (dynamic, stored in Firebase) ----------
+const DEFAULT_CATEGORIES = {
+  elimu:        { label: 'Elimu', icon: 'fa-graduation-cap' },
+  dini:         { label: 'Kanisa/Dini', icon: 'fa-cross' },
+  usalama:      { label: 'Usalama & Ufuatiliaji', icon: 'fa-satellite-dish' },
+  admin:        { label: 'Admin/Management', icon: 'fa-briefcase' },
+  entertainment:{ label: 'Entertainment', icon: 'fa-film' },
+  zana:         { label: 'Zana/Utility', icon: 'fa-screwdriver-wrench' },
+  premium:      { label: 'Premium', icon: 'fa-crown' },
+};
+let allCategories = {};
+function catLabel(key) { return (allCategories[key] || {}).label || key; }
+function fillCategorySelect(el) {
+  const cur = el.value;
+  el.innerHTML = Object.entries(allCategories).map(([k, c]) => `<option value="${k}">${c.label}</option>`).join('');
+  if (cur && allCategories[cur]) el.value = cur;
+}
+function loadCategories() {
+  db.ref('categories').once('value').then(snap => {
+    if (!snap.exists()) db.ref('categories').set(DEFAULT_CATEGORIES);
+  });
+  db.ref('categories').on('value', snap => {
+    allCategories = snap.val() || {};
+    fillCategorySelect(document.getElementById('fCategory'));
+    fillCategorySelect(document.getElementById('eCategory'));
+    renderCategoriesList();
+    renderManageApps();
+  });
+}
+function renderCategoriesList() {
+  const wrap = document.getElementById('categoriesList');
+  if (!wrap) return;
+  const entries = Object.entries(allCategories);
+  if (!entries.length) { wrap.innerHTML = `<p class="text-sm text-gray-500">Hakuna categories bado.</p>`; return; }
+  wrap.innerHTML = entries.map(([key, c]) => `
+    <div class="flex items-center justify-between bg-panel2 border border-line rounded-xl px-4 py-3">
+      <div class="flex items-center gap-2 min-w-0">
+        <i class="fa-solid ${c.icon || 'fa-shapes'} text-emerald text-sm"></i>
+        <p class="text-sm truncate">${c.label}</p>
+      </div>
+      <button onclick="deleteCategory('${key}')" class="w-8 h-8 shrink-0 rounded-lg bg-panel border border-line hover:border-red-500 text-xs text-red-400"><i class="fa-solid fa-trash"></i></button>
+    </div>
+  `).join('');
+}
+function slugify(s) { return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, ''); }
+function addCategory() {
+  const label = document.getElementById('catLabel').value.trim();
+  const icon = document.getElementById('catIcon').value.trim() || 'fa-shapes';
+  if (!label) { showToast('Jaza jina la category.'); return; }
+  const key = slugify(label) || ('cat_' + Date.now());
+  if (allCategories[key]) { showToast('Category hii tayari ipo.'); return; }
+  db.ref('categories/' + key).set({ label, icon }).then(() => {
+    showToast('Category imeongezwa.');
+    document.getElementById('catLabel').value = '';
+    document.getElementById('catIcon').value = '';
+  });
+}
+function deleteCategory(key) {
+  if (!confirm('Kufuta category hii hakutafuta apps zilizopo ndani yake. Endelea?')) return;
+  db.ref('categories/' + key).remove().then(() => showToast('Category imefutwa.'));
+}
+
+let allApps = {};
+let currentUser = null;
+
+function uploadFile(file, path) {
+  const ref = storage.ref().child(path + '/' + Date.now() + '_' + file.name.replace(/\s+/g, '_'));
+  return ref.put(file).then(snap => snap.ref.getDownloadURL());
+}
+
+// ---------- ADMIN LOGIN ----------
+function submitAdminLogin() {
+  const email = document.getElementById('adminEmail').value.trim();
+  const pass = document.getElementById('adminPass').value;
+  const errBox = document.getElementById('loginError');
+  errBox.classList.add('hidden');
+  if (!email || !pass) { errBox.textContent = 'Jaza barua pepe na password.'; errBox.classList.remove('hidden'); return; }
+
+  auth.signInWithEmailAndPassword(email, pass).then(cred => {
+    db.ref('admins/' + cred.user.uid).once('value').then(s => {
+      if (s.val() === true) {
+        currentUser = cred.user;
+        document.getElementById('loginScreen').classList.add('hidden');
+        document.getElementById('dashboard').classList.remove('hidden');
+        loadCategories();
+        loadApps();
+        loadUsersList();
+        loadAnnouncements();
+      } else {
+        errBox.textContent = 'Akaunti hii sio ya admin.';
+        errBox.classList.remove('hidden');
+        auth.signOut();
+      }
+    });
+  }).catch(err => {
+    const map = {
+      'auth/user-not-found': 'Akaunti haipo.',
+      'auth/wrong-password': 'Password sio sahihi.',
+      'auth/invalid-email': 'Barua pepe si sahihi.',
+    };
+    errBox.textContent = map[err.code] || 'Hitilafu imetokea, jaribu tena.';
+    errBox.classList.remove('hidden');
+  });
+}
+function logout() {
+  auth.signOut();
+  document.getElementById('dashboard').classList.add('hidden');
+  document.getElementById('loginScreen').classList.remove('hidden');
+  document.getElementById('adminEmail').value = '';
+  document.getElementById('adminPass').value = '';
+}
+
+// ---------- TABS ----------
+function switchTab(tab) {
+  document.querySelectorAll('.admin-tab').forEach(b => {
+    const active = b.dataset.tab === tab;
+    b.classList.toggle('border-emerald', active);
+    b.classList.toggle('text-emerald', active);
+    b.classList.toggle('border-transparent', !active);
+    b.classList.toggle('text-gray-400', !active);
+  });
+  document.getElementById('tabAdd').classList.toggle('hidden', tab !== 'add');
+  document.getElementById('tabManage').classList.toggle('hidden', tab !== 'manage');
+  document.getElementById('tabCategories').classList.toggle('hidden', tab !== 'categories');
+  document.getElementById('tabUsers').classList.toggle('hidden', tab !== 'users');
+  document.getElementById('tabAds').classList.toggle('hidden', tab !== 'ads');
+}
+
+function updateAdFormFields() {
+  const type = document.getElementById('adType').value;
+  document.getElementById('adFieldText').classList.toggle('hidden', type !== 'text');
+  document.getElementById('adFieldImage').classList.toggle('hidden', type !== 'image');
+  document.getElementById('adFieldVideo').classList.toggle('hidden', type !== 'video');
+}
+
+// ---------- APPS ----------
+function loadApps() {
+  db.ref('apps').on('value', snap => {
+    allApps = snap.val() || {};
+    renderManageApps();
+  });
+}
+function addApp() {
+  const name = document.getElementById('fName').value.trim();
+  const category = document.getElementById('fCategory').value;
+  const description = document.getElementById('fDesc').value.trim();
+  const downloadLink = document.getElementById('fLink').value.trim();
+  const locked = document.getElementById('fLocked').checked;
+  const lockMessage = document.getElementById('fLockMsg').value.trim();
+  const file = document.getElementById('fIconFile').files[0];
+  const errBox = document.getElementById('formError');
+  const okBox = document.getElementById('formSuccess');
+  errBox.classList.add('hidden'); okBox.classList.add('hidden');
+
+  if (!name || !category || !downloadLink) {
+    errBox.textContent = 'Jina, category na download link ni lazima.';
+    errBox.classList.remove('hidden');
+    return;
+  }
+  const btn = document.getElementById('fSubmitBtn');
+  btn.disabled = true; btn.textContent = 'Inapakia...';
+  const finish = (icon) => {
+    db.ref('apps').push({ name, category, icon: icon || '', description, downloadLink, locked: !!locked, lockMessage: lockMessage || '', addedAt: Date.now() })
+      .then(() => {
+        okBox.textContent = 'App imeongezwa kikamilifu.';
+        okBox.classList.remove('hidden');
+        ['fName','fDesc','fLink','fLockMsg'].forEach(id => document.getElementById(id).value = '');
+        document.getElementById('fIconFile').value = '';
+        document.getElementById('fLocked').checked = false;
+        document.getElementById('fLockMsgWrap').classList.add('hidden');
+      })
+      .catch(() => { errBox.textContent = 'Imeshindikana kuongeza app.'; errBox.classList.remove('hidden'); })
+      .finally(() => { btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-plus mr-1"></i> Ongeza App'; });
+  };
+  if (file) {
+    uploadFile(file, 'app-icons').then(finish).catch(() => {
+      errBox.textContent = 'Kushindwa kupakia picha.'; errBox.classList.remove('hidden');
+      btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-plus mr-1"></i> Ongeza App';
+    });
+  } else {
+    finish('');
+  }
+}
+function renderManageApps() {
+  const wrap = document.getElementById('tabManage');
+  if (!wrap) return;
+  const entries = Object.entries(allApps);
+  if (!entries.length) { wrap.innerHTML = `<p class="text-sm text-gray-500">Hakuna apps bado.</p>`; return; }
+  wrap.innerHTML = entries.map(([id, app]) => `
+    <div class="flex items-center justify-between bg-panel2 border border-line rounded-xl px-4 py-3">
+      <div class="min-w-0">
+        <p class="text-sm font-medium truncate">${app.name} ${app.locked ? '<i class="fa-solid fa-lock text-gold text-[10px] ml-1"></i>' : ''}</p>
+        <p class="text-xs text-gray-500">${catLabel(app.category)}</p>
+      </div>
+      <div class="flex gap-2 shrink-0 ml-3">
+        <button onclick="toggleAppLock('${id}')" title="Funga/Fungua" class="w-8 h-8 rounded-lg bg-panel border border-line hover:border-gold text-xs text-gold"><i class="fa-solid ${app.locked ? 'fa-lock-open' : 'fa-lock'}"></i></button>
+        <button onclick="openEditApp('${id}')" class="w-8 h-8 rounded-lg bg-panel border border-line hover:border-emerald text-xs"><i class="fa-solid fa-pen"></i></button>
+        <button onclick="deleteApp('${id}')" class="w-8 h-8 rounded-lg bg-panel border border-line hover:border-red-500 text-xs text-red-400"><i class="fa-solid fa-trash"></i></button>
+      </div>
+    </div>
+  `).join('');
+}
+function toggleAppLock(id) {
+  const app = allApps[id];
+  if (!app) return;
+  if (app.locked) { db.ref('apps/' + id).update({ locked: false }); return; }
+  const msg = prompt('Andika ujumbe utakaoonekana kwa mtumiaji:', app.lockMessage || 'App hii imefungwa kwa sasa.');
+  if (msg === null) return;
+  db.ref('apps/' + id).update({ locked: true, lockMessage: msg });
+}
+function deleteApp(id) {
+  if (!confirm('Una uhakika unataka kufuta app hii?')) return;
+  db.ref('apps/' + id).remove().then(() => showToast('App imefutwa.'));
+}
+function openEditApp(id) {
+  const app = allApps[id];
+  document.getElementById('eId').value = id;
+  document.getElementById('eName').value = app.name || '';
+  document.getElementById('eCategory').value = app.category || '';
+  document.getElementById('eIconFile').value = '';
+  document.getElementById('eDesc').value = app.description || '';
+  document.getElementById('eLink').value = app.downloadLink || '';
+  document.getElementById('eLocked').checked = !!app.locked;
+  document.getElementById('eLockMsg').value = app.lockMessage || '';
+  document.getElementById('eLockMsgWrap').classList.toggle('hidden', !app.locked);
+  openModal('editModal');
+}
+function saveEditApp() {
+  const id = document.getElementById('eId').value;
+  const file = document.getElementById('eIconFile').files[0];
+  const btn = document.getElementById('eSubmitBtn');
+  btn.disabled = true; btn.textContent = 'Inahifadhi...';
+  const finish = (iconUrl) => {
+    const updates = {
+      name: document.getElementById('eName').value.trim(),
+      category: document.getElementById('eCategory').value,
+      description: document.getElementById('eDesc').value.trim(),
+      downloadLink: document.getElementById('eLink').value.trim(),
+      locked: document.getElementById('eLocked').checked,
+      lockMessage: document.getElementById('eLockMsg').value.trim(),
+    };
+    if (iconUrl) updates.icon = iconUrl;
+    db.ref('apps/' + id).update(updates).then(() => { closeModal('editModal'); showToast('Mabadiliko yamehifadhiwa.'); })
+      .finally(() => { btn.disabled = false; btn.textContent = 'Hifadhi Mabadiliko'; });
+  };
+  if (file) {
+    uploadFile(file, 'app-icons').then(finish).catch(() => { showToast('Kushindwa kupakia picha.'); btn.disabled = false; btn.textContent = 'Hifadhi Mabadiliko'; });
+  } else {
+    finish(null);
+  }
+}
+
+// ---------- USERS ----------
+let allUsers = {};
+function loadUsersList() {
+  db.ref('users').on('value', snap => {
+    allUsers = snap.val() || {};
+    renderUsersList();
+  });
+}
+function renderUsersList() {
+  const wrap = document.getElementById('tabUsers');
+  if (!wrap) return;
+  const entries = Object.entries(allUsers);
+  if (!entries.length) { wrap.innerHTML = `<p class="text-sm text-gray-500">Hakuna users bado.</p>`; return; }
+  const catOptions = Object.entries(allCategories).map(([k, c]) => `<option value="${k}">${c.label}</option>`).join('');
+  wrap.innerHTML = entries.map(([uid, u]) => {
+    const bc = u.blockedCategories || {};
+    const bcKeys = Object.keys(bc).filter(k => bc[k]);
+    return `
+    <div class="bg-panel2 border border-line rounded-xl px-4 py-3">
+      <div class="flex items-center justify-between">
+        <div class="min-w-0">
+          <p class="text-sm truncate">${u.email || uid}</p>
+          <p class="text-[11px] text-gray-500">${u.blocked ? 'Amefungwa' : 'Hai'} ${u.lastSeen ? '· ' + new Date(u.lastSeen).toLocaleDateString('sw-TZ') : ''}</p>
+        </div>
+        <button onclick="toggleUserBlock('${uid}')" class="text-xs font-medium px-3 py-1.5 rounded-full border shrink-0 ml-3 ${u.blocked ? 'border-emerald text-emerald' : 'border-red-500/50 text-red-400'}">${u.blocked ? 'Fungua' : 'Funga'}</button>
+      </div>
+      <div class="flex flex-wrap gap-1.5 mt-2">
+        ${bcKeys.map(k => `<span class="text-[10px] bg-panel border border-line px-2 py-1 rounded-full flex items-center gap-1">${catLabel(k)} <i class="fa-solid fa-xmark cursor-pointer text-red-400" onclick="unblockUserCategory('${uid}','${k}')"></i></span>`).join('')}
+      </div>
+      <div class="flex gap-1.5 mt-2">
+        <select id="ubc_${uid}" class="flex-1 bg-panel border border-line rounded-lg px-2 py-1.5 text-xs outline-none">${catOptions}</select>
+        <button onclick="blockUserCategory('${uid}')" class="text-xs px-3 py-1.5 rounded-lg bg-panel border border-line text-gray-300 whitespace-nowrap">Funga Category</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function toggleUserBlock(uid) {
+  const u = allUsers[uid] || {};
+  db.ref('users/' + uid).update({ blocked: !u.blocked }).then(() => showToast(!u.blocked ? 'Mtumiaji amefungwa.' : 'Mtumiaji amefunguliwa.'));
+}
+function blockUserCategory(uid) {
+  const key = document.getElementById('ubc_' + uid).value;
+  if (!key) return;
+  db.ref('users/' + uid + '/blockedCategories/' + key).set(true).then(() => showToast('Category imefungwa kwa mtumiaji huyu.'));
+}
+function unblockUserCategory(uid, key) {
+  db.ref('users/' + uid + '/blockedCategories/' + key).remove().then(() => showToast('Category imefunguliwa.'));
+}
+
+// ---------- MATANGAZO (ANNOUNCEMENTS) ----------
+let allAds = {};
+function loadAnnouncements() {
+  db.ref('announcements').on('value', snap => {
+    allAds = snap.val() || {};
+    renderAdsList();
+  });
+}
+function addAnnouncement() {
+  const type = document.getElementById('adType').value;
+  const errBox = document.getElementById('adFormError');
+  const okBox = document.getElementById('adFormSuccess');
+  errBox.classList.add('hidden'); okBox.classList.add('hidden');
+  const btn = document.getElementById('adSubmitBtn');
+
+  const finish = (payload) => {
+    db.ref('announcements').push(payload).then(() => {
+      okBox.textContent = 'Tangazo limechapishwa.';
+      okBox.classList.remove('hidden');
+      ['adText','adImgTitle','adImgCaption','adImgLink','adVidTitle','adVidUrl','adVidLink'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('adImgFile').value = '';
+      document.getElementById('adVidFile').value = '';
+    }).catch(() => { errBox.textContent = 'Imeshindikana kuchapisha tangazo.'; errBox.classList.remove('hidden'); })
+      .finally(() => { btn.disabled = false; });
+  };
+
+  btn.disabled = true;
+  if (type === 'text') {
+    const text = document.getElementById('adText').value.trim();
+    if (!text) { errBox.textContent = 'Andika ujumbe wa tangazo.'; errBox.classList.remove('hidden'); btn.disabled = false; return; }
+    finish({ type, text, createdAt: Date.now() });
+  } else if (type === 'image') {
+    const title = document.getElementById('adImgTitle').value.trim();
+    const caption = document.getElementById('adImgCaption').value.trim();
+    const link = document.getElementById('adImgLink').value.trim();
+    const file = document.getElementById('adImgFile').files[0];
+    if (!title || !file) { errBox.textContent = 'Jina na picha ni lazima.'; errBox.classList.remove('hidden'); btn.disabled = false; return; }
+    uploadFile(file, 'announcements').then(imageUrl => finish({ type, title, imageUrl, caption, link, createdAt: Date.now() }))
+      .catch(() => { errBox.textContent = 'Kushindwa kupakia picha.'; errBox.classList.remove('hidden'); btn.disabled = false; });
+  } else if (type === 'video') {
+    const title = document.getElementById('adVidTitle').value.trim();
+    const url = document.getElementById('adVidUrl').value.trim();
+    const link = document.getElementById('adVidLink').value.trim();
+    const file = document.getElementById('adVidFile').files[0];
+    if (!title || (!url && !file)) { errBox.textContent = 'Jina na (Video URL au faili ya video) ni lazima.'; errBox.classList.remove('hidden'); btn.disabled = false; return; }
+    if (file) {
+      uploadFile(file, 'announcements').then(videoUrl => finish({ type, title, videoUrl, link, createdAt: Date.now() }))
+        .catch(() => { errBox.textContent = 'Kushindwa kupakia video.'; errBox.classList.remove('hidden'); btn.disabled = false; });
+    } else {
+      finish({ type, title, videoUrl: url, link, createdAt: Date.now() });
+    }
+  }
+}
+function renderAdsList() {
+  const wrap = document.getElementById('adsList');
+  const entries = Object.entries(allAds);
+  if (!entries.length) { wrap.innerHTML = `<p class="text-sm text-gray-500">Hakuna matangazo bado.</p>`; return; }
+  const typeLabel = { text: 'Maandishi', image: 'Picha (Coming Soon)', video: 'Video' };
+  const typeIcon = { text: 'fa-align-left', image: 'fa-image', video: 'fa-circle-play' };
+  wrap.innerHTML = entries.map(([id, ad]) => `
+    <div class="flex items-center justify-between bg-panel2 border border-line rounded-xl px-4 py-3">
+      <div class="min-w-0 flex items-center gap-2">
+        <i class="fa-solid ${typeIcon[ad.type] || 'fa-bullhorn'} text-emerald text-sm"></i>
+        <div class="min-w-0">
+          <p class="text-sm font-medium truncate">${ad.title || ad.text || 'Tangazo'}</p>
+          <p class="text-xs text-gray-500">${typeLabel[ad.type] || ad.type}</p>
+        </div>
+      </div>
+      <button onclick="deleteAnnouncement('${id}')" class="w-8 h-8 shrink-0 rounded-lg bg-panel border border-line hover:border-red-500 text-xs text-red-400"><i class="fa-solid fa-trash"></i></button>
+    </div>
+  `).join('');
+}
+function deleteAnnouncement(id) {
+  if (!confirm('Una uhakika unataka kufuta tangazo hili?')) return;
+  db.ref('announcements/' + id).remove().then(() => showToast('Tangazo limefutwa.'));
+}
+
+// ---------- MODAL HELPERS ----------
+function openModal(id) { document.getElementById(id).classList.remove('hidden'); document.getElementById(id).classList.add('flex'); }
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); document.getElementById(id).classList.remove('flex'); }
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.remove('hidden');
+  setTimeout(() => t.classList.add('hidden'), 2200);
+}
+</script>
+</body>
+</html>
